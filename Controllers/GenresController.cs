@@ -24,11 +24,13 @@ namespace BookStore.Controllers
             return View(await _service.FindAllAsync());
         }
 
+        // Genre/Create/x
         public IActionResult Create()
         {
             return View();
         }
 
+        // POST Genre/Create/x
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Genre genre)
@@ -43,6 +45,7 @@ namespace BookStore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // Genre/Delete/x
         public async Task<IActionResult> Delete(int? id)
         {
             if (id is null)
@@ -59,6 +62,7 @@ namespace BookStore.Controllers
         }
 
 
+        // POST Genre/Delete/x
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
@@ -84,5 +88,48 @@ namespace BookStore.Controllers
 			};
 			return View(viewModel);
 		}
+
+        // Genre/Edit/x
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "o id não foi fornecido" });
+            }
+            Genre genre = await _service.FindByIdAsync(id.Value);
+            if (genre is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "O id não foi encontrado." });
+            }
+
+            return View(genre);
+        }
+
+
+        // POST Genre/Edit/x
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Genre genre)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+
+            if (id != genre.Id)
+            {
+                return RedirectToAction(nameof(Error), new { message = "Id's não condizentes" });
+            }
+
+            try
+            {
+                await _service.UpdateAsync(genre);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (ApplicationException ex)
+            {
+                return RedirectToAction(nameof(Error), new { message = ex.Message });
+            }
+        }
 	}
 }
