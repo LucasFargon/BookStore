@@ -1,12 +1,9 @@
-﻿using BookStore.Data;
-using BookStore.Models;
+﻿using BookStore.Models;
 using BookStore.Models.ViewModels;
 using BookStore.Services;
 using BookStore.Services.Exceptions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 
 namespace BookStore.Controllers
 {
@@ -24,7 +21,7 @@ namespace BookStore.Controllers
             return View(await _service.FindAllAsync());
         }
 
-        // Genre/Create/x
+        // GET Genre/Create/x
         public IActionResult Create()
         {
             return View();
@@ -45,7 +42,7 @@ namespace BookStore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // Genre/Delete/x
+        // GET Genre/Delete/x
         public async Task<IActionResult> Delete(int? id)
         {
             if (id is null)
@@ -78,18 +75,7 @@ namespace BookStore.Controllers
             }
         }
 
-
-		public IActionResult Error(string message)
-		{
-			var viewModel = new ErrorViewModel
-			{
-				Message = message,
-				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
-			};
-			return View(viewModel);
-		}
-
-        // Genre/Edit/x
+        // GET Genre/Edit/x
         public async Task<IActionResult> Edit(int? id)
         {
             if (id is null)
@@ -131,5 +117,33 @@ namespace BookStore.Controllers
                 return RedirectToAction(nameof(Error), new { message = ex.Message });
             }
         }
+
+        // GET Genre/Details/x
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "o id não foi fornecido" });
+            }
+            Genre genre = await _service.FindByIdEagerAsync(id.Value);
+            if (genre is null)
+            {
+                return RedirectToAction(nameof(Error), new { message = "O id não foi encontrado." });
+            }
+
+            return View(genre);
+        }
+
+        public IActionResult Error(string message)
+		{
+			var viewModel = new ErrorViewModel
+			{
+				Message = message,
+				RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier
+			};
+			return View(viewModel);
+		}
+
+
 	}
 }

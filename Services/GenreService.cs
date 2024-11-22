@@ -26,12 +26,17 @@ namespace BookStore.Services
 			await _context.SaveChangesAsync();
 		}
 
-		public async Task<Genre> FindByIdAsync(int id)
-		{
-			return await _context.Genres.FindAsync(id);
-		}
+        public async Task<Genre> FindByIdAsync(int id)
+        {
+            return await _context.Genres.FirstOrDefaultAsync(x => x.Id == id);
+        }
 
-		public async Task RemoveAsync(int id)
+		public async Task<Genre> FindByIdEagerAsync(int id)
+		{
+            return await _context.Genres.Include(x => x.Books).FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task RemoveAsync(int id)
 		{
 			try
 			{
