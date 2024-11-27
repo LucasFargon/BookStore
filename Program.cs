@@ -15,6 +15,7 @@ namespace BookStore
 
 
             builder.Services.AddScoped<GenreService>();
+            builder.Services.AddScoped<BookService>();
             builder.Services.AddScoped<SeedingService>();
 
 
