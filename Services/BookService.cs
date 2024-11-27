@@ -17,13 +17,12 @@ namespace BookStore.Services
 
         public async Task<List<Book>> FindAllAsync()
         {
-            return await _context.Books.ToListAsync();
+            return await _context.Books.Include(x => x.Genres).ToListAsync();
         }
 
         public async Task<Book> FindByIdAsync(int id)
         {
-            return await _context.Books
-                .FirstOrDefaultAsync(m => m.Id == id);
+            return await _context.Books.Include(x => x.Genres).FirstOrDefaultAsync(m => m.Id == id);
         }
 
         public async Task InsertAsync(Book book)
