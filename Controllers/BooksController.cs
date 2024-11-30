@@ -18,10 +18,12 @@ namespace BookStore.Controllers
     public class BooksController : Controller
     {
         private readonly BookService _service;
+        private readonly GenreService _genreService;
 
-        public BooksController(BookService service)
+        public BooksController(BookService service, GenreService genreService)
         {
             _service = service;
+            _genreService = genreService;
         }
 
         // GET: Books
@@ -48,24 +50,37 @@ namespace BookStore.Controllers
         }
 
         // GET: Books/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            List<Genre> genres = await _genreService.FindAllAsync();
+
+            BookFormViewModel viewModel = new BookFormViewModel { Genres = genres };
+            return View(viewModel);
         }
 
         // POST: Books/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Book book)
+        public async Task<IActionResult> Create(BookFormViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
-                return View();
+                viewModel.Genres = await _genreService.FindAllAsync();
+                return View(viewModel);
             }
 
-            await _service.InsertAsync(book);
+            viewModel.Book.Genres = new List<Genre>();
+
+            foreach (int genreId in viewModel.SelectedGenresIds)
+            {
+                Genre genre = await _genreService.FindByIdAsync(genreId);
+                if (genre is not null)
+                {
+                    viewModel.Book.Genres.Add(genre);
+                }
+            }
+
+            await _service.InsertAsync(viewModel.Book);
             return RedirectToAction(nameof(Index));
         }
 
@@ -83,29 +98,30 @@ namespace BookStore.Controllers
                 return RedirectToAction(nameof(Error), new { message = "O id não foi encontrado." });
             }
 
-            return View(book);
+            List<Genre> genres = await _genreService.FindAllAsync();
+            BookFormViewModel viewModel = new BookFormViewModel { Book = book, Genres = genres };
+
+            return View(viewModel);
         }
 
         // POST: Books/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Book book)
+        public async Task<IActionResult> Edit(int id, BookFormViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
                 return View();
             }
 
-            if (id != book.Id)
+            if (id != viewModel.Book.Id)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id's não condizentes." });
             }
 
             try
             {
-                await _service.UpdateAsync(book);
+                await _service.UpdateAsync(viewModel);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException ex)
